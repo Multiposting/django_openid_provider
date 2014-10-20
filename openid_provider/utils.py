@@ -63,8 +63,10 @@ def add_ax_data(request, orequest, oresponse):
     if ax_req is not None:
         for attr in ax_req.getRequiredAttrs():
             value = ax_data.get(attr, None)
-            if value is not None:
-                ax_resp.addValue(attr, value)
+            if isinstance(value, list):
+                ax_resp.setValues(attr, value)
+            elif value is not None:
+                ax_resp.setValue(attr, value)
     oresponse.addExtension(ax_resp)
 
 def get_sreg_callback():
