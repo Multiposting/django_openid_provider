@@ -2,6 +2,8 @@
 # some code from http://www.djangosnippets.org/snippets/310/ by simon
 # and from examples/djopenid from python-openid-2.2.4
 from hashlib import sha1
+from importlib import import_module
+
 from openid_provider import conf
 from openid.extensions import ax, sreg
 from openid.server.server import Server, BROWSER_REQUEST_MODES
@@ -14,7 +16,6 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.utils.importlib import import_module
 
 import logging
 
@@ -67,7 +68,7 @@ def add_ax_data(request, orequest, oresponse):
             if isinstance(value, list):
                 ax_resp.setValues(attr, value)
             elif value is not None:
-                ax_resp.setValue(attr, value)
+                ax_resp.setValues(attr, [value])
     oresponse.addExtension(ax_resp)
 
 def get_sreg_callback():
@@ -107,7 +108,8 @@ def trust_root_validation(orequest):
 
 def get_trust_session_key(orequest):
     return 'OPENID_' + sha1(
-        orequest.trust_root + orequest.return_to).hexdigest()
+        (orequest.trust_root + orequest.return_to).encode()  # TODO: urlencode?
+    ).hexdigest()
 
 def prep_response(request, orequest, oresponse, server=None):
     # Convert a webresponse from the OpenID library in to a Django HttpResponse
